@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import requests
+import json
+import sys,os,traceback
+import time
+class weChat:
+    def __init__(self,Corpid,Secret): 
+        url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s' % (Corpid,Secret)
+        res = self.url_req(url)
+        self.token = res["access_token"]
+    def url_req(self,url):
+        req = requests.get(url)
+        res = json.loads(req.text)
+        return res
+ 
+    def send_message(self,user,title,description): 
+        url = "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s" % self.token
+        data = { 
+                "touser": user, 
+                "msgtype": "textcard", 
+                "agentid": "1000002", 
+                "textcard": { 
+                        "title":title,
+                        "description":description,
+                        "url":"www.baidu.com"
+                        }, 
+                }
+        res = requests.post(url,json=data)
+        if json.loads(res.content.decode())['errmsg'] == 'ok':
+            return "send message sucessed"
+        else:
+            pass
+ 
+ 
+if __name__ == '__main__': 
+    user = sys.argv[1]
+    title = str(sys.argv[2])
+    description = str(sys.argv[3])
+    Corpid = "Your_Corpid"
+    Secret = "Your_Secret"
+    os.chdir(r'/tmp')
+    command = open('command.log','a')
+    command.write("sys.argv[1] = " + sys.argv[1]+"\n"+
+        "sys.argv[2] = " + sys.argv[2] +"\n"+
+         "sys.argv[3] = " + sys.argv[3])
+    command.close()
+    try:
+        get_token = weChat(Corpid,Secret)
+        line = get_token.send_message(user,title,description)
+        log = open(r'wechat.log','a').write(str(time.time())+"\t"+line+"\n")
+        log.close()
+    except:
+        errorFile = open('errorInfo.log','a')
+        errorFile.write(traceback.format_exc())
+        errorFile.close()
